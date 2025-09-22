@@ -7,8 +7,11 @@ export class TriviaAPI {
   static async fetchQuestions(
     config: { amount: number; category?: string; difficulty?: string }
   ): Promise<TriviaQuestion[]> {
+    // Ensure we don't request more than the API limit
+    const requestAmount = Math.min(config.amount, 50);
+    
     const params = new URLSearchParams({
-      amount: config.amount.toString(),
+      amount: requestAmount.toString(),
       type: 'multiple'
     });
 
@@ -25,13 +28,28 @@ export class TriviaAPI {
       const data = await response.json();
 
       if (data.response_code !== 0) {
-        throw new Error('Failed to fetch questions');
+        let errorMessage = 'Failed to fetch questions';
+        switch (data.response_code) {
+          case 1:
+            errorMessage = 'No results found. Try different category/difficulty settings.';
+            break;
+          case 2:
+            errorMessage = 'Invalid parameter. Please check your settings.';
+            break;
+          case 3:
+            errorMessage = 'Token not found.';
+            break;
+          case 4:
+            errorMessage = 'Token empty. Please try again.';
+            break;
+        }
+        throw new Error(errorMessage);
       }
 
       return data.results;
     } catch (error) {
       console.error('Error fetching trivia questions:', error);
-      throw new Error('Unable to load questions. Please try again.');
+      throw error instanceof Error ? error : new Error('Unable to load questions. Please try again.');
     }
   }
 

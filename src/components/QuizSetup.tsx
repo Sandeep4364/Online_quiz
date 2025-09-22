@@ -42,10 +42,18 @@ export const QuizSetup: React.FC<QuizSetupProps> = ({ onStartQuiz, loading }) =>
   ];
 
   const questionCounts = [5, 10, 15, 20, 25];
+  const maxQuestions = 50;
   const timerOptions = [15, 30, 45, 60, 90];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate question count
+    if (config.amount < 1 || config.amount > 50) {
+      alert('Please select between 1 and 50 questions.');
+      return;
+    }
+    
     onStartQuiz(config);
   };
 
@@ -64,6 +72,18 @@ export const QuizSetup: React.FC<QuizSetupProps> = ({ onStartQuiz, loading }) =>
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             Number of Questions
           </label>
+          <div className="mb-4">
+            <input
+              type="number"
+              min="1"
+              max={maxQuestions}
+              value={config.amount}
+              onChange={(e) => setConfig({ ...config, amount: Math.min(maxQuestions, Math.max(1, parseInt(e.target.value) || 1)) })}
+              className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors duration-300"
+              placeholder="Enter number of questions (1-50)"
+            />
+            <p className="text-xs text-gray-500 mt-1">Enter any number between 1 and {maxQuestions}</p>
+          </div>
           <div className="grid grid-cols-5 gap-3">
             {questionCounts.map(count => (
               <button
@@ -80,6 +100,7 @@ export const QuizSetup: React.FC<QuizSetupProps> = ({ onStartQuiz, loading }) =>
               </button>
             ))}
           </div>
+          <p className="text-xs text-gray-400 mt-2">Quick select common amounts or use the input above for custom numbers</p>
         </div>
 
         <div>

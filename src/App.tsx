@@ -66,10 +66,18 @@ function App() {
     setLoading(true);
     try {
       const triviaQuestions = await TriviaAPI.fetchQuestions(config);
+      
+      // Validate we got the requested number of questions
+      if (triviaQuestions.length < config.amount) {
+        throw new Error(`Only ${triviaQuestions.length} questions available for this category/difficulty. Please try different settings.`);
+      }
+      
+      // Ensure we only use the exact number requested
       const questions = transformTriviaQuestions(triviaQuestions);
+      const limitedQuestions = questions.slice(0, config.amount);
       
       setQuiz({
-        questions,
+        questions: limitedQuestions,
         currentQuestionIndex: 0,
         score: 0,
         timeLeft: config.timer,
@@ -94,6 +102,7 @@ function App() {
       }, 1000);
     } catch (error) {
       console.error('Failed to start quiz:', error);
+      alert(error instanceof Error ? error.message : 'Unable to load questions. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -11,6 +11,7 @@ interface QuizQuestionProps {
   onHint?: () => void;
   hintUsed?: boolean;
   streak?: number;
+  onEndSession?: () => void;
 }
 
 export const QuizQuestion: React.FC<QuizQuestionProps> = ({ 
@@ -20,7 +21,8 @@ export const QuizQuestion: React.FC<QuizQuestionProps> = ({
   selectedAnswer,
   onHint,
   hintUsed = false,
-  streak = 0
+  streak = 0,
+  onEndSession
 }) => {
   const settings = StorageService.getSettings();
 
@@ -87,8 +89,20 @@ export const QuizQuestion: React.FC<QuizQuestionProps> = ({
         {question.question}
       </h2>
 
+      {/* Back Button */}
+      {onEndSession && (
+        <div className="mb-6">
+          <button
+            onClick={onEndSession}
+            className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+          >
+            ← End Quiz
+          </button>
+        </div>
+      )}
+
       <div className="space-y-3">
-        {question.answers.map((answer, index) => {
+        {question.options.map((answer, index) => {
           const isHintAnswer = hintUsed && answer !== question.correctAnswer && Math.random() > 0.5;
           return (
           <button

@@ -27,11 +27,11 @@ export const transformTriviaQuestions = (triviaQuestions: TriviaQuestion[]): Qui
     const allAnswers = shuffleArray([decodedCorrectAnswer, ...decodedIncorrectAnswers]);
 
     return {
-      id: index + 1,
+      id: (index + 1).toString(),
       category: TriviaAPI.decodeHtmlEntities(question.category),
       difficulty: question.difficulty,
       question: decodedQuestion,
-      answers: allAnswers,
+      options: allAnswers,
       correctAnswer: decodedCorrectAnswer,
     };
   });

@@ -5,21 +5,19 @@ const CATEGORIES_URL = 'https://opentdb.com/api_category.php';
 
 export class TriviaAPI {
   static async fetchQuestions(
-    amount: number = 10,
-    category?: string,
-    difficulty?: string
+    config: { amount: number; category?: string; difficulty?: string }
   ): Promise<TriviaQuestion[]> {
     const params = new URLSearchParams({
-      amount: amount.toString(),
+      amount: config.amount.toString(),
       type: 'multiple'
     });
 
-    if (category && category !== 'any') {
-      params.append('category', category);
+    if (config.category && config.category !== 'any') {
+      params.append('category', config.category);
     }
 
-    if (difficulty && difficulty !== 'any') {
-      params.append('difficulty', difficulty);
+    if (config.difficulty && config.difficulty !== 'any') {
+      params.append('difficulty', config.difficulty);
     }
 
     try {

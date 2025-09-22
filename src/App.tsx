@@ -133,65 +133,74 @@ function App() {
 
     setShowFeedback(true);
 
-    // Auto-advance to next question or results
-    if (settings.autoAdvance) {
+    // Check if this is the last question
+    if (quiz.currentQuestionIndex + 1 >= quiz.questions.length) {
+      // This is the last question, end the quiz after showing feedback
       setTimeout(() => {
-        nextQuestion();
-      }, 2500);
+        endQuiz();
+      }, settings.autoAdvance ? 2500 : 0);
+    } else {
+      // Auto-advance to next question if enabled
+      if (settings.autoAdvance) {
+        setTimeout(() => {
+          nextQuestion();
+        }, 2500);
+      }
     }
+  };
+
+  const endQuiz = () => {
+    // Calculate final stats and save
+    const totalTime = quiz.startTime ? Math.floor((Date.now() - quiz.startTime) / 1000) : 0;
+    const percentage = Math.round((quiz.score / quiz.questions.length) * 100);
+    
+    // Update statistics
+    const stats = StorageService.getStats();
+    const newStats = {
+      ...stats,
+      totalQuizzes: stats.totalQuizzes + 1,
+      totalQuestions: stats.totalQuestions + quiz.questions.length,
+      correctAnswers: stats.correctAnswers + quiz.score,
+      averageScore: Math.round(((stats.averageScore * stats.totalQuizzes) + percentage) / (stats.totalQuizzes + 1)),
+      bestStreak: Math.max(stats.bestStreak, quiz.streak),
+      fastestTime: stats.fastestTime === 0 ? totalTime : Math.min(stats.fastestTime, totalTime)
+    };
+    StorageService.saveStats(newStats);
+    
+    // Add to leaderboard if player name is provided
+    if (playerName.trim()) {
+      const leaderboard = StorageService.getLeaderboard();
+      const entry = {
+        id: Date.now().toString(),
+        name: playerName.trim(),
+        score: quiz.score,
+        percentage,
+        time: totalTime,
+        date: new Date().toISOString(),
+        category: 'Mixed',
+        difficulty: 'Mixed'
+      };
+      leaderboard.push(entry);
+      StorageService.saveLeaderboard(leaderboard);
+    }
+    
+    // Check for new achievements
+    const unlockedAchievements = achievements.filter(achievement => 
+      achievement.condition(newStats) && !stats.achievements?.includes(achievement.id)
+    );
+    
+    if (unlockedAchievements.length > 0) {
+      SoundService.playComplete();
+    }
+    
+    setGameState('results');
   };
 
   const nextQuestion = () => {
     const nextIndex = quiz.currentQuestionIndex + 1;
     
-    if (nextIndex >= quiz.questions.length) {
-      // Calculate final stats and save
-      const totalTime = quiz.startTime ? Math.floor((Date.now() - quiz.startTime) / 1000) : 0;
-      const percentage = Math.round((quiz.score / quiz.questions.length) * 100);
-      
-      // Update statistics
-      const stats = StorageService.getStats();
-      const newStats = {
-        ...stats,
-        totalQuizzes: stats.totalQuizzes + 1,
-        totalQuestions: stats.totalQuestions + quiz.questions.length,
-        correctAnswers: stats.correctAnswers + quiz.score,
-        averageScore: Math.round(((stats.averageScore * stats.totalQuizzes) + percentage) / (stats.totalQuizzes + 1)),
-        bestStreak: Math.max(stats.bestStreak, quiz.streak),
-        fastestTime: stats.fastestTime === 0 ? totalTime : Math.min(stats.fastestTime, totalTime)
-      };
-      StorageService.saveStats(newStats);
-      
-      // Add to leaderboard if player name is provided
-      if (playerName.trim()) {
-        const leaderboard = StorageService.getLeaderboard();
-        const entry = {
-          id: Date.now().toString(),
-          name: playerName.trim(),
-          score: quiz.score,
-          percentage,
-          time: totalTime,
-          date: new Date().toISOString(),
-          category: 'Mixed', // You could track this from quiz config
-          difficulty: 'Mixed'
-        };
-        leaderboard.push(entry);
-        StorageService.saveLeaderboard(leaderboard);
-      }
-      
-      // Check for new achievements
-      const unlockedAchievements = achievements.filter(achievement => 
-        achievement.condition(newStats) && !stats.achievements?.includes(achievement.id)
-      );
-      
-      if (unlockedAchievements.length > 0) {
-        SoundService.playComplete();
-        // You could show achievement notifications here
-      }
-      
-      setGameState('results');
-      return;
-    }
+    // This function should only be called for non-final questions
+    if (nextIndex >= quiz.questions.length) return;
 
     setQuiz(prev => ({
       ...prev,
@@ -355,13 +364,18 @@ function App() {
               onHint={handleHint}
               hintUsed={hintUsed}
               streak={quiz.streak}
+              onEndSession={exitQuiz}
             />
             
             {showFeedback && !settings.autoAdvance && (
               <div className="text-center">
                 <button
-                  onClick={nextQuestion}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                  onClick={quiz.currentQuestionIndex + 1 >= quiz.questions.length ? endQuiz : nextQuestion}
+                  className={`px-6 py-3 font-semibold rounded-lg transition-colors ${
+                    quiz.currentQuestionIndex + 1 >= quiz.questions.length
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
                 >
                   {quiz.currentQuestionIndex + 1 >= quiz.questions.length ? 'View Results' : 'Next Question'}
                 </button>

@@ -127,8 +127,10 @@ export const QuizQuestion: React.FC<QuizQuestionProps> = ({
           <p className="text-blue-800 font-medium">
             {selectedAnswer === question.correctAnswer ? '✅ Correct!' : '❌ Incorrect'}
           </p>
-          {question.explanation && (
-            <p className="text-blue-700 mt-2">{question.explanation}</p>
+          {selectedAnswer !== question.correctAnswer && (
+            <p className="text-blue-700 mt-2">
+              <strong>Correct answer:</strong> {question.correctAnswer}
+            </p>
           )}
         </div>
       )}

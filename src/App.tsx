@@ -142,19 +142,15 @@ function App() {
 
     setShowFeedback(true);
 
-    // Check if this is the last question
-    if (quiz.currentQuestionIndex + 1 >= quiz.questions.length) {
-      // This is the last question, end the quiz after showing feedback
+    // Always show feedback first, then handle progression
+    if (settings.autoAdvance) {
       setTimeout(() => {
-        endQuiz();
-      }, settings.autoAdvance ? 2500 : 0);
-    } else {
-      // Auto-advance to next question if enabled
-      if (settings.autoAdvance) {
-        setTimeout(() => {
+        if (quiz.currentQuestionIndex + 1 >= quiz.questions.length) {
+          endQuiz();
+        } else {
           nextQuestion();
-        }, 2500);
-      }
+        }
+      }, 2500);
     }
   };
 
@@ -396,7 +392,6 @@ function App() {
         {gameState === 'results' && (
           <QuizResults
             quiz={quiz}
-            onRestart={restartQuiz}
             onExit={exitQuiz}
           />
         )}

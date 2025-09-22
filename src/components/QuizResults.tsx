@@ -1,18 +1,24 @@
 import React from 'react';
 import { Trophy, RotateCcw, Home } from 'lucide-react';
-import { QuizQuestion } from '../types/quiz';
+import { QuizState } from '../types/quiz';
 import { calculatePercentage, getScoreMessage } from '../utils/quizHelpers';
 
 interface QuizResultsProps {
-  questions: QuizQuestion[];
-  score: number;
+  quiz: QuizState;
   onRestart: () => void;
-  onNewQuiz: () => void;
+  onExit: () => void;
 }
 
-export const QuizResults: React.FC<QuizResultsProps> = ({ questions, score, onRestart, onNewQuiz }) => {
-  const percentage = calculatePercentage(score, questions.length);
+export const QuizResults: React.FC<QuizResultsProps> = ({ quiz, onRestart, onExit }) => {
+  const percentage = calculatePercentage(quiz.score, quiz.questions.length);
   const { title, message, color } = getScoreMessage(percentage);
+  
+  const totalTime = quiz.startTime ? Math.floor((Date.now() - quiz.startTime) / 1000) : 0;
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
@@ -25,25 +31,43 @@ export const QuizResults: React.FC<QuizResultsProps> = ({ questions, score, onRe
       </div>
 
       <div className="bg-gray-50 rounded-lg p-6 mb-8">
-        <div className="grid grid-cols-3 gap-6 text-center">
+        <div className="grid grid-cols-4 gap-4 text-center">
           <div>
-            <div className="text-3xl font-bold text-blue-600">{score}</div>
+            <div className="text-2xl font-bold text-blue-600">{quiz.score}</div>
             <div className="text-gray-600">Correct</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-red-600">{questions.length - score}</div>
+            <div className="text-2xl font-bold text-red-600">{quiz.questions.length - quiz.score}</div>
             <div className="text-gray-600">Wrong</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-green-600">{percentage}%</div>
+            <div className="text-2xl font-bold text-green-600">{percentage}%</div>
             <div className="text-gray-600">Score</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-purple-600">{formatTime(totalTime)}</div>
+            <div className="text-gray-600">Time</div>
+          </div>
+        </div>
+        
+        {/* Additional Stats */}
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <div className="text-lg font-bold text-orange-600">{quiz.streak}</div>
+              <div className="text-sm text-gray-600">Best Streak</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-indigo-600">{quiz.hintsUsed}</div>
+              <div className="text-sm text-gray-600">Hints Used</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="space-y-4 mb-8">
         <h3 className="text-xl font-semibold text-gray-900">Review Answers</h3>
-        {questions.map((question, index) => (
+        {quiz.questions.map((question, index) => (
           <div key={index} className="p-4 border rounded-lg">
             <div className="flex items-start gap-3 mb-2">
               <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -53,11 +77,12 @@ export const QuizResults: React.FC<QuizResultsProps> = ({ questions, score, onRe
               </span>
               <div className="flex-1">
                 <p className="font-medium text-gray-900 mb-1">{question.question}</p>
+                <p className="text-xs text-gray-500 mb-2">{question.category} • {question.difficulty}</p>
                 <div className="text-sm space-y-1">
                   <p>
                     <span className="font-medium text-gray-700">Your answer:</span>{' '}
                     <span className={question.isCorrect ? 'text-green-600' : 'text-red-600'}>
-                      {question.userAnswer}
+                      {question.userAnswer || 'No answer'}
                     </span>
                   </p>
                   {!question.isCorrect && (
@@ -82,7 +107,7 @@ export const QuizResults: React.FC<QuizResultsProps> = ({ questions, score, onRe
           Try Again
         </button>
         <button
-          onClick={onNewQuiz}
+          onClick={onExit}
           className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
         >
           <Home size={20} />

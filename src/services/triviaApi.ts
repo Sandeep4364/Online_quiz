@@ -5,7 +5,7 @@ const CATEGORIES_URL = 'https://opentdb.com/api_category.php';
 
 export class TriviaAPI {
   static async fetchQuestions(
-    config: { amount: number; category?: string; difficulty?: string }
+    config: { amount: number; category?: number; difficulty?: string }
   ): Promise<TriviaQuestion[]> {
     // Ensure we don't request more than the API limit
     const requestAmount = Math.min(config.amount, 50);
@@ -15,7 +15,7 @@ export class TriviaAPI {
       type: 'multiple'
     });
 
-    if (config.category && config.category !== 'any') {
+    if (config.category && config.category.toString() !== 'any') {
       params.append('category', config.category);
     }
 
@@ -23,9 +23,14 @@ export class TriviaAPI {
       params.append('difficulty', config.difficulty);
     }
 
+    console.log('API Request URL:', `${BASE_URL}?${params.toString()}`);
+    console.log('Config:', config);
+
     try {
       const response = await fetch(`${BASE_URL}?${params}`);
       const data = await response.json();
+
+      console.log('API Response:', data);
 
       if (data.response_code !== 0) {
         let errorMessage = 'Failed to fetch questions';

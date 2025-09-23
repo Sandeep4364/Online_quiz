@@ -175,6 +175,14 @@ function App() {
     // Add to leaderboard if player name is provided
     if (playerName.trim()) {
       const leaderboard = StorageService.getLeaderboard();
+      
+      // Get category and difficulty names for display
+      const currentQuestion = quiz.questions[0];
+      const categoryName = currentQuestion?.category || 'Mixed';
+      const difficultyName = quiz.questions.every(q => q.difficulty === quiz.questions[0].difficulty) 
+        ? quiz.questions[0].difficulty 
+        : 'Mixed';
+      
       const entry = {
         id: Date.now().toString(),
         name: playerName.trim(),
@@ -182,8 +190,8 @@ function App() {
         percentage,
         time: totalTime,
         date: new Date().toISOString(),
-        category: 'Mixed',
-        difficulty: 'Mixed'
+        category: categoryName,
+        difficulty: difficultyName
       };
       leaderboard.push(entry);
       StorageService.saveLeaderboard(leaderboard);

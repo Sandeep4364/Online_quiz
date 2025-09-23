@@ -11,7 +11,7 @@ interface QuizSetupProps {
 export const QuizSetup: React.FC<QuizSetupProps> = ({ onStartQuiz, loading }) => {
   const [config, setConfig] = useState<QuizConfig>({
     amount: 10,
-    category: 'any',
+    category: undefined,
     difficulty: 'any',
     timer: 30
   });
@@ -108,14 +108,17 @@ export const QuizSetup: React.FC<QuizSetupProps> = ({ onStartQuiz, loading }) =>
             Category
           </label>
           <select
-            value={config.category}
-            onChange={(e) => setConfig({ ...config, category: e.target.value })}
+            value={config.category || 'any'}
+            onChange={(e) => setConfig({ 
+              ...config, 
+              category: e.target.value === 'any' ? undefined : parseInt(e.target.value)
+            })}
             className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors duration-300"
             disabled={loadingCategories}
           >
             <option value="any">Any Category</option>
             {categories.map(category => (
-              <option key={category.id} value={category.id.toString()}>
+              <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}

@@ -198,6 +198,13 @@ function App() {
       SoundService.playComplete();
     }
     
+    // Update quiz state with completion data
+    setQuiz(prev => ({
+      ...prev,
+      isCompleted: true,
+      totalTime: totalTime
+    }));
+    
     setGameState('results');
   };
 
@@ -230,6 +237,8 @@ function App() {
       streak: 0,
       hintsUsed: 0,
       startTime: Date.now(),
+      isCompleted: false,
+      totalTime: 0,
       questions: prev.questions.map(q => ({
         ...q,
         userAnswer: undefined,
@@ -266,6 +275,7 @@ function App() {
     setShowFeedback(false);
     setSelectedAnswer(undefined);
     setHintUsed(false);
+    setPlayerName('');
   };
 
   const handleHint = () => {

@@ -1,19 +1,18 @@
 import React from 'react';
-import { Trophy, RotateCcw, Home } from 'lucide-react';
+import { Trophy, Home, RotateCcw } from 'lucide-react';
 import { QuizState } from '../types/quiz';
 import { calculatePercentage, getScoreMessage } from '../utils/quizHelpers';
 
 interface QuizResultsProps {
   quiz: QuizState;
-  onRestart: () => void;
   onExit: () => void;
 }
 
-export const QuizResults: React.FC<QuizResultsProps> = ({ quiz, onRestart, onExit }) => {
+export const QuizResults: React.FC<QuizResultsProps> = ({ quiz, onExit }) => {
   const percentage = calculatePercentage(quiz.score, quiz.questions.length);
   const { title, message, color } = getScoreMessage(percentage);
   
-  const totalTime = quiz.startTime ? Math.floor((Date.now() - quiz.startTime) / 1000) : 0;
+  const totalTime = quiz.totalTime || 0;
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -98,20 +97,13 @@ export const QuizResults: React.FC<QuizResultsProps> = ({ quiz, onRestart, onExi
         ))}
       </div>
 
-      <div className="flex gap-4">
-        <button
-          onClick={onRestart}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
-        >
-          <RotateCcw size={20} />
-          Try Again
-        </button>
+      <div className="text-center">
         <button
           onClick={onExit}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-lg transition-all duration-300 flex items-center justify-center gap-3 mx-auto"
         >
           <Home size={20} />
-          New Quiz
+          Back to Home
         </button>
       </div>
     </div>
